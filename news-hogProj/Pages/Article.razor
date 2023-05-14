@@ -1,0 +1,258 @@
+﻿@page "/article/{PostId}/{PostShortTitle}"
+
+@inject Services.PostService PostService
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+@using news_hogProj.Objects
+
+
+<style>
+    .reply-box {
+        margin-left: 30px;
+        background-color: #F0F0F0;
+        border: 1px solid #DDD;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 5px;
+    }
+
+    .button-x {
+        background-color: #FF0000;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        float: right;
+    }
+</style>
+
+<h2>@post?.PostTitle</h2>
+
+@if (post == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="article">
+        <img src="../Application_Images/@post.PathToHeaderImage" alt="@post.PostTitle">
+        <h5>@post.PostTitle</h5>
+        <p>@post.PostLastUpdated</p>
+        <div>@post.PostBody</div>
+    </div>
+
+    <div class="comments">
+
+
+        <h3>Comments</h3>
+
+        @if (comments.Count == 0)
+        {
+            <label>No comments on this article yet.</label>
+        }
+        else
+        {
+            @foreach (var comment in comments)
+            {
+                <div class="comment">
+                    <p><strong>@comment.UserName</strong></p>
+                    <p>@comment.CommentBody</p>
+                    <p>Posted on: @comment.CommentSysDate</p>
+
+                    @if (IsUserLoggedIn && comment.ParentCommentId == null)
+                    {
+                        <button disabled="@replyButtonDisabled" @onclick="() => BeginReply(comment)">Reply</button>
+                    }
+                    @if (comment.Replies != null && comment.Replies.Any())
+                    {
+                        <button @onclick="() => ToggleReplies(comment.CommentId)">
+                            @if (shownReplies.Contains(comment.CommentId))
+                            {
+                                @:Hide Replies
+                            }
+                            else
+                            {
+                                @:Show Replies
+                            }
+                        </button>
+
+                        if (shownReplies.Contains(comment.CommentId))
+                        {
+                            foreach (var reply in comment.Replies)
+                            {
+                                <div class="reply reply-box">
+                                    <p><strong>@reply.UserName</strong></p>
+                                    <p>@reply.CommentBody</p>
+                                    <p>Posted on: @reply.CommentSysDate</p>
+                                </div>
+                            }
+                        }
+                    }
+
+
+                </div>
+            }
+        }
+
+
+
+        @if (IsUserLoggedIn)
+        {
+            @if (showCommentSection)
+            {
+                <input type="text" @bind="newComment.CommentBody" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;" placeholder="Write a comment..." />
+                <button @onclick="AddComment" style="background-color: #007BFF; color: white; padding:10px 20px; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">Post Comment</button>
+                <button class="button-x" @onclick="CancelComment">X</button>
+            }
+            else
+            {
+                <button style="margin-top:20px;" @onclick="() => showCommentSection = true">Add a Comment</button>
+            }
+            <label style="color:red;">@valComment</label>
+
+            @if (replyToComment != null)
+            {
+                <h3>Reply to @replyToComment.CommentBody</h3>
+                <input type="text" @bind="newReply.CommentBody" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;" placeholder="Write a reply..." />
+                <button @onclick="AddReply" style="background-color: #007BFF; color: white; padding:10px 20px; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">Post Reply</button>
+                <button class="button-x" @onclick="CancelReply">X</button>
+
+                <label style="color:red;">@valReply</label>
+            }
+        }
+        else
+        {
+            <p>You must be logged in to post a comment.</p>
+        }
+
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string? PostId { get; set; }
+    [Parameter]
+    public string? PostShortTitle { get; set; }
+
+    private IdentityUser? CurrentUser { get; set; }
+    private bool IsUserLoggedIn { get; set; }
+
+    private bool replyButtonDisabled = false;
+
+    private bool showCommentSection = false;
+
+
+    private Post? post;
+    private List<Comment>? comments;
+    private Comment? replyToComment;
+    private Comment newComment = new Comment();
+    private Comment newReply = new Comment();
+
+    public string valReply = "";
+    public string valComment = "";
+
+    private HashSet<int> shownReplies = new HashSet<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(PostId, out var postId))
+        {
+            post = await PostService.GetPostById(postId);
+            comments = await PostService.GetCommentsByPostId(postId);
+        }
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        IsUserLoggedIn = SignInManager.IsSignedIn(user); // Check if user is logged in
+
+        if (IsUserLoggedIn)
+        {
+            CurrentUser = await UserManager.GetUserAsync(user); // Get the logged-in user's information
+        }
+
+        //StateHasChanged();
+    }
+
+    private void ToggleReplies(int commentId)
+    {
+        if (shownReplies.Contains(commentId))
+        {
+            shownReplies.Remove(commentId);
+        }
+        else
+        {
+            shownReplies.Add(commentId);
+        }
+    }
+
+    private void BeginReply(Comment comment)
+    {
+        replyButtonDisabled = true;
+        replyToComment = comment;
+    }
+
+    private async Task AddComment()
+    {
+
+        if (String.IsNullOrWhiteSpace(newComment.CommentBody))
+        {
+            valComment = "Your comment cannot be empty, please say something!";
+            return;
+        }
+        else
+        {
+            valComment = "";
+        }
+
+        newComment.PostId = post.PostId;
+        newComment.UserId = CurrentUser.Id; // Assign the user's ID to the comment
+        newComment.UserName = CurrentUser.UserName; // Assign the user's username to the comment
+        await PostService.AddComment(newComment);
+        comments = await PostService.GetCommentsByPostId(post.PostId); // Refresh comments
+        newComment = new Comment(); // Clear the new comment
+        showCommentSection = false;
+    }
+
+    private async Task AddReply()
+    {
+        if (String.IsNullOrWhiteSpace(newReply.CommentBody))
+        {
+            valReply = "Your reply cannot be empty, please say something!";
+            return;
+        }
+        else
+        {
+            valReply = "";
+        }
+
+        replyButtonDisabled = false;
+        newReply.PostId = post.PostId;
+        newReply.ParentCommentId = replyToComment.CommentId;
+        newReply.UserId = CurrentUser.Id; // Assign the user's ID to the reply
+        newReply.UserName = CurrentUser.UserName; // Assign the user's username to the reply
+        await PostService.AddComment(newReply);
+        comments = await PostService.GetCommentsByPostId(post.PostId); // Refresh comments
+        newReply = new Comment(); // Clear the new reply
+        replyToComment = null; // Clear the reply target
+    }
+
+    private void CancelReply()
+    {
+        newReply = new Comment(); // Clear the reply target
+        replyButtonDisabled = false; // Enable the reply button
+        valReply = "";
+    }
+
+    private void CancelComment()
+    {
+        newComment = new Comment(); // Clear the new comment
+        valComment = "";
+        showCommentSection = false;
+    }
+
+}

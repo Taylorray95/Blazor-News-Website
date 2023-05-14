@@ -1,0 +1,34 @@
+/* News Grid Styling */
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-gap: 1rem;
+    margin-top: 2rem;
+}
+
+.news-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+    .news-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+.news-card-body {
+    padding: 1rem;
+}
+
+    .news-card-body h5 {
+        margin-bottom: 0.5rem;
+    }
+
+    .news-card-body p {
+        color: #666;
+        line-height: 1.6;
+    }

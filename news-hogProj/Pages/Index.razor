@@ -1,0 +1,39 @@
+﻿@page "/"
+@inject Services.PostService PostService
+
+<h3>Most Recent Articles</h3>
+
+@if (recentPosts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="news-grid">
+
+        @foreach (var post in recentPosts)       
+        {
+            <div class="news-card">
+                <a href="/article/@post.PostId/@post.PostShortTitle">
+                    <img src="./Application_Images/@post.PathToHeaderImage" alt="@post.PostTitle">
+                </a>
+                <div class="news-card-body">
+                    <a href="/article/@post.PostId/@post.PostShortTitle">
+                        <h5>@post.PostTitle</h5>
+                    </a>
+                    <p>@post.PostLastUpdated</p>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Post>? recentPosts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        recentPosts = await PostService.GetRecentPosts(86);
+    }
+
+}
