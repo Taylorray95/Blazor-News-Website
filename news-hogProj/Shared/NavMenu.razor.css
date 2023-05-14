@@ -52,7 +52,7 @@
             color: #000000;
         }
 
-@media (min-width: 641px) {
+/*@media (min-width: 641px) {
     .navbar-toggler {
         display: none;
     }
@@ -67,3 +67,4 @@
         overflow-y: auto;
     }
 }
+*/

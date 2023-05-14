@@ -4,33 +4,11 @@
 @inject UserManager<IdentityUser> UserManager
 @inject SignInManager<IdentityUser> SignInManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
+@inject IJSRuntime JSRuntime
 
 @using news_hogProj.Objects
 
-
-<style>
-    .reply-box {
-        margin-left: 30px;
-        background-color: #F0F0F0;
-        border: 1px solid #DDD;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 5px;
-    }
-
-    .button-x {
-        background-color: #FF0000;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        float: right;
-    }
-</style>
-
-<h2>@post?.PostTitle</h2>
+<h2>@post?.PostShortTitle</h2>
 
 @if (post == null)
 {
@@ -38,98 +16,124 @@
 }
 else
 {
-    <div class="article">
-        <img src="../Application_Images/@post.PathToHeaderImage" alt="@post.PostTitle">
+<div class="article">
+    <div class="article-body">
+            <img class="article-img" src="../Application_Images/@post.PathToHeaderImage" alt="@post.PostTitle">
         <h5>@post.PostTitle</h5>
-        <p>@post.PostLastUpdated</p>
-        <div>@post.PostBody</div>
-    </div>
-
-    <div class="comments">
-
-
-        <h3>Comments</h3>
-
-        @if (comments.Count == 0)
+        <p class="date">@post.PostLastUpdated</p>
+        @if (!string.IsNullOrEmpty(post.PostBody))
         {
-            <label>No comments on this article yet.</label>
-        }
-        else
-        {
-            @foreach (var comment in comments)
+            var midpoint = post.PostBody.Length / 2; // Find the midpoint of the text
+            var splitPoint = post.PostBody.LastIndexOf('.', midpoint); // Find the last period before the midpoint
+
+            // If we didn't find a period, just split at the midpoint
+            if (splitPoint == -1)
             {
-                <div class="comment">
-                    <p><strong>@comment.UserName</strong></p>
-                    <p>@comment.CommentBody</p>
-                    <p>Posted on: @comment.CommentSysDate</p>
-
-                    @if (IsUserLoggedIn && comment.ParentCommentId == null)
-                    {
-                        <button disabled="@replyButtonDisabled" @onclick="() => BeginReply(comment)">Reply</button>
-                    }
-                    @if (comment.Replies != null && comment.Replies.Any())
-                    {
-                        <button @onclick="() => ToggleReplies(comment.CommentId)">
-                            @if (shownReplies.Contains(comment.CommentId))
-                            {
-                                @:Hide Replies
-                            }
-                            else
-                            {
-                                @:Show Replies
-                            }
-                        </button>
-
-                        if (shownReplies.Contains(comment.CommentId))
-                        {
-                            foreach (var reply in comment.Replies)
-                            {
-                                <div class="reply reply-box">
-                                    <p><strong>@reply.UserName</strong></p>
-                                    <p>@reply.CommentBody</p>
-                                    <p>Posted on: @reply.CommentSysDate</p>
-                                </div>
-                            }
-                        }
-                    }
-
-
-                </div>
-            }
-        }
-
-
-
-        @if (IsUserLoggedIn)
-        {
-            @if (showCommentSection)
-            {
-                <input type="text" @bind="newComment.CommentBody" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;" placeholder="Write a comment..." />
-                <button @onclick="AddComment" style="background-color: #007BFF; color: white; padding:10px 20px; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">Post Comment</button>
-                <button class="button-x" @onclick="CancelComment">X</button>
+                splitPoint = midpoint;
             }
             else
             {
-                <button style="margin-top:20px;" @onclick="() => showCommentSection = true">Add a Comment</button>
+                // If we did find a period, move the split point one character ahead so the period stays with the first half of the text
+                splitPoint++;
             }
-            <label style="color:red;">@valComment</label>
 
-            @if (replyToComment != null)
-            {
+            var firstHalfText = post.PostBody.Substring(0, splitPoint); // Get the first half of the text
+            var secondHalfText = post.PostBody.Substring(splitPoint); // Get the second half of the text
+
+            <div>@(new MarkupString(firstHalfText))</div>
+            // Display the first half of the text
+            <div style="margin: 20px 0;">
+                <!-- Add space before and after the image -->
+                <img class="article-img" src="../Application_Images/@post.PathToBodyImage" alt="@post.PostTitle">
+            </div>
+            <div>@(new MarkupString(secondHalfText))</div>
+            // Display the second half of the text
+        }
+        </div>
+    </div>
+  <div class="comments">
+    @if (IsUserLoggedIn)
+    {
+        @if (showCommentSection)
+        {
+            <textarea @bind="newComment.CommentBody" placeholder="Write a comment..."></textarea>
+            <button @onclick="AddComment" style="background-color: #007BFF; color: white; padding:10px 20px; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">Post Comment</button>
+            <button class="button-x" @onclick="CancelComment">X</button>
+                <label style="color:red;">@valComment</label>
+        }
+        else
+        {
+            <button  @onclick="() => showCommentSection = true" style="background-color: #007BFF; color: white; padding:10px 20px; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">Add a Comment</button>
+        }
+            
+    }
+    else
+    {
+            <p>You must be logged in to post a comment.</p>
+    }
+
+    <h3>Comments</h3>
+
+    @if (comments.Count == 0)
+    {
+        <label>No comments on this article yet.</label>
+    }
+    else
+    {
+        @foreach (var comment in comments)
+        {
+            <div class="comment">
+                <p><strong>@comment.UserName</strong></p>
+                <p>@comment.CommentBody</p>
+                <p>Posted on: @comment.CommentSysDate</p>
+
+                @if (IsUserLoggedIn && comment.ParentCommentId == null)
+                {
+                    <button disabled="@replyButtonDisabled" @onclick="() => BeginReply(comment)">Reply</button>
+                }
+                @if (comment.Replies != null && comment.Replies.Any())
+                {
+                    <button @onclick="() => ToggleReplies(comment.CommentId)">
+                        @if (shownReplies.Contains(comment.CommentId))
+                        {
+                            @:Hide Replies
+                        }
+                        else
+                        {
+                            @:Show Replies
+                        }
+                    </button>
+
+                    if (shownReplies.Contains(comment.CommentId))
+                    {
+                        foreach (var reply in comment.Replies)
+                        {
+                            <div class="reply reply-box">
+                                <p><strong>@reply.UserName</strong></p>
+                                <p>@reply.CommentBody</p>
+                                <p>Posted on: @reply.CommentSysDate</p>
+                            </div>
+                        }
+                    }
+                }
+            </div>
+        }
+    } 
+    </div>
+
+    @if (replyToComment != null)
+    {
+        <div class="modal" style="display: @(showReplySection ? "block" : "none");">
+            <div class="modal-content">
                 <h3>Reply to @replyToComment.CommentBody</h3>
-                <input type="text" @bind="newReply.CommentBody" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;" placeholder="Write a reply..." />
+                <textarea @bind="newReply.CommentBody" placeholder="Write a reply..."></textarea>
                 <button @onclick="AddReply" style="background-color: #007BFF; color: white; padding:10px 20px; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">Post Reply</button>
                 <button class="button-x" @onclick="CancelReply">X</button>
 
                 <label style="color:red;">@valReply</label>
-            }
-        }
-        else
-        {
-            <p>You must be logged in to post a comment.</p>
-        }
-
-    </div>
+            </div>
+        </div>
+    }
 }
 
 @code {
@@ -144,7 +148,7 @@ else
     private bool replyButtonDisabled = false;
 
     private bool showCommentSection = false;
-
+    private bool showReplySection = false;
 
     private Post? post;
     private List<Comment>? comments;
@@ -154,6 +158,8 @@ else
 
     public string valReply = "";
     public string valComment = "";
+
+    private string youMustBeLoggedInMessage = "You must be logged in to post a comment.";
 
     private HashSet<int> shownReplies = new HashSet<int>();
 
@@ -174,8 +180,6 @@ else
         {
             CurrentUser = await UserManager.GetUserAsync(user); // Get the logged-in user's information
         }
-
-        //StateHasChanged();
     }
 
     private void ToggleReplies(int commentId)
@@ -190,15 +194,8 @@ else
         }
     }
 
-    private void BeginReply(Comment comment)
-    {
-        replyButtonDisabled = true;
-        replyToComment = comment;
-    }
-
     private async Task AddComment()
     {
-
         if (String.IsNullOrWhiteSpace(newComment.CommentBody))
         {
             valComment = "Your comment cannot be empty, please say something!";
@@ -215,6 +212,13 @@ else
         await PostService.AddComment(newComment);
         comments = await PostService.GetCommentsByPostId(post.PostId); // Refresh comments
         newComment = new Comment(); // Clear the new comment
+        showCommentSection = false;
+    }
+
+    private void CancelComment()
+    {
+        newComment = new Comment(); // Clear the new comment
+        valComment = "";
         showCommentSection = false;
     }
 
@@ -241,18 +245,19 @@ else
         replyToComment = null; // Clear the reply target
     }
 
+    private void BeginReply(Comment comment)
+    {
+        replyButtonDisabled = true;
+        showReplySection = true;
+        replyToComment = comment;
+        JSRuntime.InvokeVoidAsync("scrollToElement", "reply-modal");
+    }
+
     private void CancelReply()
     {
         newReply = new Comment(); // Clear the reply target
         replyButtonDisabled = false; // Enable the reply button
         valReply = "";
+        showReplySection = false;
     }
-
-    private void CancelComment()
-    {
-        newComment = new Comment(); // Clear the new comment
-        valComment = "";
-        showCommentSection = false;
-    }
-
 }
