@@ -1,8 +1,10 @@
 ﻿@page "/article/{PostId}/{PostShortTitle}"
 
 @inject Services.PostService PostService
-@inject UserManager<IdentityUser> UserManager
-@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@inject SignInManager<ApplicationUser> SignInManager
+
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
 
@@ -18,7 +20,7 @@ else
 {
 <div class="article">
     <div class="article-body">
-            <img class="article-img" src="../Application_Images/@post.PathToHeaderImage" alt="@post.PostTitle">
+            <img class="article-img" src="@post.PathToHeaderImage" alt="@post.PostTitle">
         <h5>@post.PostTitle</h5>
         <p class="date">@post.PostLastUpdated</p>
         @if (!string.IsNullOrEmpty(post.PostBody))
@@ -44,7 +46,7 @@ else
             // Display the first half of the text
             <div style="margin: 20px 0;">
                 <!-- Add space before and after the image -->
-                <img class="article-img" src="../Application_Images/@post.PathToBodyImage" alt="@post.PostTitle">
+                <img class="article-img" src="@post.PathToBodyImage" alt="@post.PostTitle">
             </div>
             <div>@(new MarkupString(secondHalfText))</div>
             // Display the second half of the text
@@ -74,50 +76,65 @@ else
 
     <h3>Comments</h3>
 
-    @if (comments.Count == 0)
+    @if (comments!.Count == 0)
     {
         <label>No comments on this article yet.</label>
     }
     else
     {
-        @foreach (var comment in comments)
-        {
-            <div class="comment">
-                <p><strong>@comment.UserName</strong></p>
-                <p>@comment.CommentBody</p>
-                <p>Posted on: @comment.CommentSysDate</p>
+            @foreach (var comment in comments)
+            {
+                <div class="comment">
+                    <div class="profile-section">
+                        @if (userPhotos.ContainsKey(comment!.UserId))
+                        {
+                            <img class="profile-photo" src="@userPhotos[comment.UserId]" />
+                        }
+                        <p class="username">@comment.UserName</p>
+                    </div>
+                    <p class="comment-body">@comment.CommentBody</p>
+                    <p class="comment-date">Posted on: @comment.CommentSysDate</p>
 
-                @if (IsUserLoggedIn && comment.ParentCommentId == null)
-                {
-                    <button disabled="@replyButtonDisabled" @onclick="() => BeginReply(comment)">Reply</button>
-                }
-                @if (comment.Replies != null && comment.Replies.Any())
-                {
-                    <button @onclick="() => ToggleReplies(comment.CommentId)">
+                    @if (IsUserLoggedIn && comment.ParentCommentId == null)
+                    {
+                        <button disabled="@replyButtonDisabled" @onclick="() => BeginReply(comment)">Reply</button>
+                    }
+
+                    @if (comment.Replies != null && comment.Replies.Any())
+                    {
+                        <button @onclick="() => ToggleReplies(comment.CommentId)">
+                            @if (shownReplies.Contains(comment.CommentId))
+                            {
+                                @:Hide Replies
+                            }
+                            else
+                            {
+                                @:Show Replies
+                            }
+                        </button>
+
                         @if (shownReplies.Contains(comment.CommentId))
                         {
-                            @:Hide Replies
-                        }
-                        else
-                        {
-                            @:Show Replies
-                        }
-                    </button>
-
-                    if (shownReplies.Contains(comment.CommentId))
-                    {
-                        foreach (var reply in comment.Replies)
-                        {
-                            <div class="reply reply-box">
-                                <p><strong>@reply.UserName</strong></p>
-                                <p>@reply.CommentBody</p>
-                                <p>Posted on: @reply.CommentSysDate</p>
+                            <div class="replies">
+                                @foreach (var reply in comment.Replies)
+                                {
+                                    <div class="reply reply-box">
+                                        <div class="profile-section">
+                                            @if (userPhotos.ContainsKey(reply!.UserId))
+                                            {
+                                                <img class="profile-photo" src="@userPhotos[reply.UserId]" />
+                                            }
+                                            <p class="username">@reply.UserName</p>
+                                        </div>
+                                        <p class="comment-body">@reply.CommentBody</p>
+                                        <p class="comment-date">Posted on: @reply.CommentSysDate</p>
+                                    </div>
+                                }
                             </div>
                         }
                     }
-                }
-            </div>
-        }
+                </div>
+            }
     } 
     </div>
 
@@ -142,7 +159,9 @@ else
     [Parameter]
     public string? PostShortTitle { get; set; }
 
-    private IdentityUser? CurrentUser { get; set; }
+    public int postIdParsed;
+
+    private ApplicationUser? CurrentUser { get; set; }
     private bool IsUserLoggedIn { get; set; }
 
     private bool replyButtonDisabled = false;
@@ -159,7 +178,10 @@ else
     public string valReply = "";
     public string valComment = "";
 
-    private string youMustBeLoggedInMessage = "You must be logged in to post a comment.";
+    public bool firstRender = true; 
+
+
+    private Dictionary<string, string> userPhotos = new Dictionary<string, string>();
 
     private HashSet<int> shownReplies = new HashSet<int>();
 
@@ -169,6 +191,22 @@ else
         {
             post = await PostService.GetPostById(postId);
             comments = await PostService.GetCommentsByPostId(postId);
+
+            postIdParsed = postId;
+
+            if (firstRender == true)
+            {
+                await PostService.IncrementPageViews(postIdParsed);
+            }
+
+            foreach (var comment in comments)
+            {
+                var commentUser = await UserManager.FindByIdAsync(comment!.UserId!);
+                if (commentUser != null)
+                {
+                    userPhotos[comment.UserId] = commentUser!.ProfilePhoto!;
+                }
+            }
         }
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -179,8 +217,11 @@ else
         if (IsUserLoggedIn)
         {
             CurrentUser = await UserManager.GetUserAsync(user); // Get the logged-in user's information
+            userPhotos[CurrentUser!.Id] = CurrentUser!.ProfilePhoto!;
         }
+        firstRender = false;
     }
+
 
     private void ToggleReplies(int commentId)
     {
@@ -206,10 +247,11 @@ else
             valComment = "";
         }
 
-        newComment.PostId = post.PostId;
-        newComment.UserId = CurrentUser.Id; // Assign the user's ID to the comment
+        newComment.PostId = post!.PostId;
+        newComment.UserId = CurrentUser!.Id; // Assign the user's ID to the comment
         newComment.UserName = CurrentUser.UserName; // Assign the user's username to the comment
         await PostService.AddComment(newComment);
+        await PostService.IncrementTotalComments(postIdParsed);
         comments = await PostService.GetCommentsByPostId(post.PostId); // Refresh comments
         newComment = new Comment(); // Clear the new comment
         showCommentSection = false;
@@ -235,11 +277,12 @@ else
         }
 
         replyButtonDisabled = false;
-        newReply.PostId = post.PostId;
-        newReply.ParentCommentId = replyToComment.CommentId;
-        newReply.UserId = CurrentUser.Id; // Assign the user's ID to the reply
-        newReply.UserName = CurrentUser.UserName; // Assign the user's username to the reply
+        newReply.PostId = post!.PostId;
+        newReply.ParentCommentId = replyToComment!.CommentId!;
+        newReply.UserId = CurrentUser!.Id; // Assign the user's ID to the reply
+        newReply.UserName = CurrentUser!.UserName; // Assign the user's username to the reply
         await PostService.AddComment(newReply);
+        await PostService.IncrementTotalComments(postIdParsed);
         comments = await PostService.GetCommentsByPostId(post.PostId); // Refresh comments
         newReply = new Comment(); // Clear the new reply
         replyToComment = null; // Clear the reply target

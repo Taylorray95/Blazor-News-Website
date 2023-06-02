@@ -1,0 +1,101 @@
+﻿@page
+@model news_hogProj.Areas.Admin.DeleteModel
+
+@{
+    ViewData["Title"] = "Delete";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Post</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PostShortTitle)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PostShortTitle)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PostTitle)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PostTitle)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PostBody)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PostBody)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PostCategoryId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PostCategoryId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PostSysDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PostSysDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PostLastUpdated)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PostLastUpdated)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PathToHeaderImage)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PathToHeaderImage)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PathToBodyImage)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PathToBodyImage)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.TotalComments)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.TotalComments)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PageViews)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PageViews)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.StatusId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.StatusId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PathToImage3)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PathToImage3)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Post.PathToImage4)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Post.PathToImage4)
+        </dd>
+    </dl>
+    
+    <form method="post">
+        <input type="hidden" asp-for="Post.PostId" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-page="./Index">Back to List</a>
+    </form>
+</div>

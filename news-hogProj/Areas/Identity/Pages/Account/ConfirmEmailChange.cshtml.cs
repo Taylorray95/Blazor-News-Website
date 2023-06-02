@@ -10,15 +10,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using news_hogProj.Objects;
 
 namespace news_hogProj.Areas.Identity.Pages.Account
 {
     public class ConfirmEmailChangeModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public ConfirmEmailChangeModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public ConfirmEmailChangeModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -54,12 +55,12 @@ namespace news_hogProj.Areas.Identity.Pages.Account
 
             // In our UI email and user name are one and the same, so when we update the email
             // we need to update the user name.
-            var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
-            if (!setUserNameResult.Succeeded)
-            {
-                StatusMessage = "Error changing user name.";
-                return Page();
-            }
+            ////var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
+            //if (!setUserNameResult.Succeeded)
+            //{
+            //    StatusMessage = "Error changing user name.";
+            //    return Page();
+            //}
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Thank you for confirming your email change.";

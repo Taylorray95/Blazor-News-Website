@@ -1,11 +1,56 @@
 /* News Grid Styling */
-
-.news-grid {
+/**/
+/*.news-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     grid-gap: 1rem;
     margin-top: 2rem;
+    justify-self:center;
+    grid-auto-flow: dense;
+}*/
+/*.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-gap: 1rem;
+    margin-top: 2rem;
+    grid-auto-flow: dense;
+}*/
+.news-grid {
+    display: grid;
+    grid-gap: 1rem;
+    margin-top: 2rem;
+    justify-self: center;
+    grid-auto-flow: dense;
 }
+
+@media screen and (max-width: 600px) {
+    /* On small screens (smartphones), display 1 item per row */
+    .news-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+@media screen and (min-width: 601px) and (max-width: 900px) {
+    /* On medium screens, display 2 items per row */
+    .news-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media screen and (min-width: 901px) {
+    /* On large screens, display 4 items per row */
+    .news-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+.last-row {
+    justify-self: center;
+}
+    .news-grid::after {
+        content: "";
+        grid-column: 1 / -1;
+    }
+
 
 .news-card {
     border: 1px solid #ddd;
@@ -16,7 +61,7 @@
 
     .news-card img {
         width: 100%;
-        height: 200px;
+        height: 100px;
         object-fit: cover;
     }
 
@@ -49,20 +94,7 @@
     border-radius: 5px;
     cursor: pointer;
 }
-/*
-.article-img {
-    max-width: 100%;
-    height: auto;
-}*/
 
-/*.article-body {
-    margin: 0 auto;
-    max-width: 800px;*/ /* You can set to the max width you want the article to have. */
-/*}*/
-
-/*.date {
-    font-size: 0.8em;*/ /* You can adjust the size as you wish. */
-/*}*/
 .modal {
     position: fixed;
     z-index: 1;
@@ -92,7 +124,7 @@
     background-color: #F9F9F9;
 }
 
-.comment, .reply-box {
+.comment {
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 1rem;
@@ -100,6 +132,14 @@
     background-color: #FFFFFF;
 }
 
+.reply-box {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #FFFFFF;
+    margin-left: 30px;
+}
 .article {
     border-bottom: 1px solid #ccc;
     padding-bottom: 2rem;
@@ -166,4 +206,36 @@ button {
     button + button {
         margin-left: 10px;
     }
+
+.profile-photo {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+}
+
+.username {
+    margin-left: 10px;
+}
+
+.comment-body {
+    margin-top: 10px;
+}
+
+.comment-date {
+    color: #666;
+}
+
+.replies {
+    margin-top: 10px;
+    margin-left: 30px;
+}
+
+.reply + .reply {
+    margin-top: 10px;
+}
 

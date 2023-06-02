@@ -1,0 +1,96 @@
+﻿@page
+@model news_hogProj.Areas.Admin.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>Post</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Post.PostId" />
+            <div class="form-group">
+                <label asp-for="Post.PostShortTitle" class="control-label"></label>
+                <input asp-for="Post.PostShortTitle" class="form-control" />
+                <span asp-validation-for="Post.PostShortTitle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PostTitle" class="control-label"></label>
+                <input asp-for="Post.PostTitle" class="form-control" />
+                <span asp-validation-for="Post.PostTitle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PostBody" class="control-label"></label>
+                <input asp-for="Post.PostBody" class="form-control" />
+                <span asp-validation-for="Post.PostBody" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PostCategoryId" class="control-label"></label>
+                <input asp-for="Post.PostCategoryId" class="form-control" />
+                <span asp-validation-for="Post.PostCategoryId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PostSysDate" class="control-label"></label>
+                <input asp-for="Post.PostSysDate" class="form-control" />
+                <span asp-validation-for="Post.PostSysDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PostLastUpdated" class="control-label"></label>
+                <input asp-for="Post.PostLastUpdated" class="form-control" />
+                <span asp-validation-for="Post.PostLastUpdated" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PathToHeaderImage" class="control-label"></label>
+                <input asp-for="Post.PathToHeaderImage" class="form-control" />
+                <span asp-validation-for="Post.PathToHeaderImage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PathToBodyImage" class="control-label"></label>
+                <input asp-for="Post.PathToBodyImage" class="form-control" />
+                <span asp-validation-for="Post.PathToBodyImage" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.TotalComments" class="control-label"></label>
+                <input asp-for="Post.TotalComments" class="form-control" />
+                <span asp-validation-for="Post.TotalComments" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PageViews" class="control-label"></label>
+                <input asp-for="Post.PageViews" class="form-control" />
+                <span asp-validation-for="Post.PageViews" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.StatusId" class="control-label"></label>
+                <input asp-for="Post.StatusId" class="form-control" />
+                <span asp-validation-for="Post.StatusId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PathToImage3" class="control-label"></label>
+                <input asp-for="Post.PathToImage3" class="form-control" />
+                <span asp-validation-for="Post.PathToImage3" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Post.PathToImage4" class="control-label"></label>
+                <input asp-for="Post.PathToImage4" class="form-control" />
+                <span asp-validation-for="Post.PathToImage4" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,108 @@
+﻿@page
+@model news_hogProj.Areas.Admin.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PostShortTitle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PostTitle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PostBody)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PostCategoryId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PostSysDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PostLastUpdated)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PathToHeaderImage)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PathToBodyImage)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].TotalComments)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PageViews)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].StatusId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PathToImage3)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Post[0].PathToImage4)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Post) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.PostShortTitle)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PostTitle)
+            </td>
+            <td>
+                    @item!.PostBody!.Substring(0, 100)
+            <td>
+                @Html.DisplayFor(modelItem => item.PostCategoryId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PostSysDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PostLastUpdated)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PathToHeaderImage)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PathToBodyImage)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalComments)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PageViews)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PathToImage3)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PathToImage4)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.PostId">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.PostId">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.PostId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

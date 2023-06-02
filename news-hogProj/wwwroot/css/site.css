@@ -69,3 +69,13 @@ a, .btn-link {
 
 
 
+.custom-file-upload .file-upload-label {
+    padding: 10px;
+    background-color: #ddd;
+    display: inline-block;
+    cursor: pointer;
+}
+
+    .custom-file-upload .file-upload-label .file-name {
+        margin-left: 10px;
+    }

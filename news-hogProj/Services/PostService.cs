@@ -1,30 +1,4 @@
-﻿//using Microsoft.EntityFrameworkCore;
-//using news_hogProj.Data;
-//using news_hogProj.Objects;
-
-//namespace news_hogProj.Services
-//{
-//    public class PostService
-//    {
-//        private readonly ApplicationDbContext _context; 
-
-//        public PostService(ApplicationDbContext context)
-//        {
-//            _context = context;
-//        }
-
-//        public async Task<List<Post>> GetRecentPosts(int amountToRetur)
-//        {
-//            return await _context.Posts.OrderByDescending(p => p.PostSysDate).Take(amountToRetur).ToListAsync();
-//        }
-
-//        public async Task<Post> GetPostById(int id)
-//        {
-//            return await _context.Posts.Where(p => p.PostId == id).FirstOrDefaultAsync()!;
-//        }
-//    }
-//}
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using news_hogProj.Data;
 using news_hogProj.Objects;
 
@@ -62,5 +36,49 @@ namespace news_hogProj.Services
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
         }
+
+        public async Task IncrementPageViews(int postId)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post != null)
+            {
+                post.PageViews++;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task IncrementTotalComments(int postId)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post != null)
+            {
+                post.TotalComments++;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DecrementTotalComments(int postId)
+        {
+            var post = await _context.Posts.FindAsync(postId);
+            if (post != null)
+            {
+                post.TotalComments--;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<Post>> GetTrendingPosts(int amountToReturn, int daysToGoBack)
+        {
+            var dateLimit = DateTime.Now.AddDays(-daysToGoBack); // posts from the last 45 days
+
+            return await _context.Posts
+                .Where(p => p.PostSysDate >= dateLimit)
+                .OrderByDescending(p => p.PageViews + (p.TotalComments * 2))
+                .Take(amountToReturn)
+                .ToListAsync();
+        }
+
+
+
     }
 }

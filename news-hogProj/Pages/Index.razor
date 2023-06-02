@@ -1,13 +1,86 @@
 ﻿@page "/"
 @inject Services.PostService PostService
 
-<h3>Most Recent Articles</h3>
+<style>
+    h3 {
+        display: inline-block;
+    }
 
-@if (recentPosts == null)
+    .filter-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .sort-dropdown {
+        display: inline-block;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        background: #f0f0f0;
+    }
+</style>
+@if (trendingPosts == null)
 {
     <p><em>Loading...</em></p>
 }
-else
+
+<div class="filter-container">
+    <h3>Trending Articles</h3>
+    <div>
+        <label>Show: </label>
+        <select @onchange="OnSortChangeTrendingAmount" class="sort-dropdown">
+            <option selected="@is6SelectedTrendingPosts" value="6">6</option>
+            <option value="9">9</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+        </select>
+        <label>From last: </label>
+        <select @onchange="OnSortChangeTrendingDays" class="sort-dropdown">
+            <option value="1">Day</option>
+            <option value="7">Week</option>
+            <option value="31">Month</option>
+            <option selected="@is45SelectedtrendingPosts" value="45">45 Days</option>
+            <option value="91">Three Months</option>
+        </select>
+    </div>
+</div>
+
+
+@if (trendingPosts != null)
+{
+    <div class="news-grid">
+        @foreach (var post in trendingPosts)
+        {
+            <div class="news-card">
+                <a href="/article/@post.PostId/@post.PostShortTitle">
+                    <img src="@post.PathToHeaderImage" alt="@post.PostTitle">
+                </a>
+                <div class="news-card-body">
+                    <a href="/article/@post.PostId/@post.PostShortTitle">
+                        <h5>@post.PostTitle</h5>
+                    </a>
+                    <p>@post.PostLastUpdated</p>
+                </div>
+            </div>
+        }
+    </div>
+    }
+
+<div class="filter-container">
+    <h3>Recent Posts</h3>
+    <div>
+        <label>Show: </label>
+        <select @onchange="OnSortChangeRecent" class="sort-dropdown">
+            <option selected="@is9SelectedRecentPosts" value="9">9</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+        </select>
+    </div>
+</div>
+
+@if (recentPosts != null)
 {
     <div class="news-grid">
 
@@ -15,7 +88,7 @@ else
         {
             <div class="news-card">
                 <a href="/article/@post.PostId/@post.PostShortTitle">
-                    <img src="./Application_Images/@post.PathToHeaderImage" alt="@post.PostTitle">
+                    <img src="@post.PathToHeaderImage" alt="@post.PostTitle">
                 </a>
                 <div class="news-card-body">
                     <a href="/article/@post.PostId/@post.PostShortTitle">
@@ -30,10 +103,70 @@ else
 
 @code {
     private List<Post>? recentPosts;
+    private List<Post>? trendingPosts;
+    private int sortDaysTrending = 45;
+    private int sortAmountTrending = 6; // Added
+    private int sortAmountRecent = 9;
+
+    public bool is45SelectedtrendingPosts = true;
+    public bool is6SelectedTrendingPosts = true; // Added
+    public bool is9SelectedRecentPosts = true;
 
     protected override async Task OnInitializedAsync()
     {
-        recentPosts = await PostService.GetRecentPosts(86);
+        recentPosts = await PostService.GetRecentPosts(9);
+        trendingPosts = await PostService.GetTrendingPosts(9, sortDaysTrending);
     }
+private async Task OnSortChangeTrendingDays(ChangeEventArgs e)
+    {
+        sortDaysTrending = Convert.ToInt32(e.Value.ToString());
+
+        if (sortDaysTrending != 45)
+        {
+            is45SelectedtrendingPosts = false;
+        }
+        else
+        {
+            is45SelectedtrendingPosts = true;
+        }
+        trendingPosts = await PostService.GetTrendingPosts(sortAmountTrending, sortDaysTrending); // Modified
+
+        StateHasChanged();
+    }
+
+    private async Task OnSortChangeTrendingAmount(ChangeEventArgs e) // Added
+    {
+        sortAmountTrending = Convert.ToInt32(e.Value.ToString());
+
+        if (sortAmountTrending != 9)
+        {
+            is6SelectedTrendingPosts = false;
+        }
+        else
+        {
+            is6SelectedTrendingPosts = true;
+        }
+        trendingPosts = await PostService.GetTrendingPosts(sortAmountTrending, sortDaysTrending);
+
+        StateHasChanged();
+    }
+
+    private async Task OnSortChangeRecent(ChangeEventArgs e)
+    {
+        sortAmountRecent = Convert.ToInt32(e.Value.ToString());
+
+        if (sortAmountRecent != 9)
+        {
+            is9SelectedRecentPosts = false;
+        }
+        else
+        {
+            is9SelectedRecentPosts = true;
+        }
+        recentPosts = await PostService.GetRecentPosts(sortAmountRecent);
+
+        StateHasChanged();
+    }
+
 
 }
