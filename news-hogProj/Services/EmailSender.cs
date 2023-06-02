@@ -23,7 +23,7 @@ namespace news_hogProj.Services
 
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            var mailMessage = new MailMessage("TaylorLeavelle@Fadasco.onmicrosoft.com", email, subject, htmlMessage) { IsBodyHtml = true };
+            var mailMessage = new MailMessage("namee@email.com", email, subject, htmlMessage) { IsBodyHtml = true };
             return _client.SendMailAsync(mailMessage);
         }
     }
